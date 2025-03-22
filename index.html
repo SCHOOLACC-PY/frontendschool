@@ -112,6 +112,68 @@
         </table>
     </div>
 
+    <body>
+
+    <div id="planning">
+        <h2>Studieplanning Invullen</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vak</th>
+                    <th>Moeilijkheid</th>
+                    <th>Datum</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+            <tbody id="planningTabel">
+                <tr>
+                    <td>
+                        <select id="vakSelect">
+                            <option value="Wiskunde">Wiskunde</option>
+                            <option value="Nederlands">Nederlands</option>
+                            <option value="Engels">Engels</option>
+                            <option value="Biologie">Biologie</option>
+                            <option value="Scheikunde">Scheikunde</option>
+                            <option value="Aardrijkskunde">Aardrijkskunde</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="moeilijkheidSelect">
+                            <option value="1">1 - Makkelijk</option>
+                            <option value="2">2</option>
+                            <option value="3">3 - Gemiddeld</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - Heel moeilijk</option>
+                        </select>
+                    </td>
+                    <td><input type="date" id="datumInput"></td>
+                    <td><button onclick="addRow()">Toevoegen</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <label for="startDatumInput">Startdatum:</label>
+        <input type="date" id="startDatumInput">
+        <label for="eindDatumInput">Einddatum:</label>
+        <input type="date" id="eindDatumInput">
+        <button onclick="submitPlanning()">Klaar</button>
+    </div>
+
+    <div id="resultaat">
+        <h2>Gegenereerde Planning</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Vak</th>
+                    <th>Studietijd (Pomodoro)</th>
+                </tr>
+            </thead>
+            <tbody id="resultaatTabel">
+                <!-- Hier komt de gegenereerde planning -->
+            </tbody>
+        </table>
+    </div>
+
     <script>
         function addRow() {
             const vak = document.getElementById("vakSelect").value;
@@ -155,6 +217,14 @@
                 }
             });
 
+            const startDatum = document.getElementById("startDatumInput").value;
+            const eindDatum = document.getElementById("eindDatumInput").value;
+
+            if (!startDatum || !eindDatum) {
+                alert("Vul zowel een start- als einddatum in.");
+                return;
+            }
+
             if (planningData.length === 0) {
                 alert("Vul eerst een planning in!");
                 return;
@@ -166,7 +236,11 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ vakken: planningData })
+                    body: JSON.stringify({ 
+                        startdatum: startDatum,
+                        einddatum: eindDatum,
+                        vakken: planningData 
+                    })
                 });
 
                 if (!response.ok) {
@@ -199,4 +273,5 @@
         }
     </script>
 </body>
+
 </html>
