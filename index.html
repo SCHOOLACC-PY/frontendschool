@@ -116,157 +116,172 @@
                 </tr>
             </tbody>
         </table>
+
+        <!-- Nieuwe tabel voor extra gegevens -->
+        <h2>Extra Studieplanning</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vak</th>
+                    <th>Moeilijkheid</th>
+                    <th>Datum</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+            <tbody id="extraPlanningTabel">
+                <tr>
+                    <td>
+                        <select id="extraVakSelect">
+                            <option value="Wiskunde">Wiskunde</option>
+                            <option value="Nederlands">Nederlands</option>
+                            <option value="Engels">Engels</option>
+                            <option value="Biologie">Biologie</option>
+                            <option value="Scheikunde">Scheikunde</option>
+                            <option value="Aardrijkskunde">Aardrijkskunde</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="extraMoeilijkheidSelect">
+                            <option value="1">1 - Makkelijk</option>
+                            <option value="2">2</option>
+                            <option value="3">3 - Gemiddeld</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - Heel moeilijk</option>
+                        </select>
+                    </td>
+                    <td><input type="date" id="extraDatumInput"></td>
+                    <td><button onclick="addExtraRow()">Toevoegen</button></td>
+                </tr>
+            </tbody>
+        </table>
         <button onclick="submitPlanning()">Klaar</button>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
-        import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
-        
-        // Firebase Config (LET OP: Sleutels niet in de frontend bewaren!)
-        const firebaseConfig = {
-            apiKey: "AIzaSyA80I-n2ZGlhvpXDoNwldefS1kLo4sajpw",
-            authDomain: "studieplanner-31715.firebaseapp.com",
-            databaseURL: "https://studieplanner-31715-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "studieplanner-31715",
-            storageBucket: "studieplanner-31715.firebasestorage.app",
-            messagingSenderId: "830151229528",
-            appId: "1:830151229528:web:921bdb3a0d2247d9f44a2d",
-            measurementId: "G-TWEQV32HC8"
+        // Toevoegen van een nieuwe rij in de eerste tabel
+        window.addRow = function() {
+            const vak = document.getElementById("vakSelect").value;
+            const moeilijkheid = document.getElementById("moeilijkheidSelect").value;
+            const datum = document.getElementById("datumInput").value;
+
+            if (vak && moeilijkheid && datum) {
+                const tableBody = document.getElementById("planningTabel");
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${vak}</td>
+                    <td>${moeilijkheid}</td>
+                    <td>${datum}</td>
+                    <td><button onclick="removeRow(this)">Verwijderen</button></td>
+                `;
+                tableBody.appendChild(row);
+
+                // Reset inputvelden
+                document.getElementById("vakSelect").value = "Wiskunde"; 
+                document.getElementById("moeilijkheidSelect").value = "1"; 
+                document.getElementById("datumInput").value = ""; 
+            } else {
+                alert("Vul alstublieft alle velden in.");
+            }
         };
-    
-        // Firebase Initialisatie
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        // Toevoegen van een nieuwe rij in de tabel
-window.addRow = function() {
-    const vak = document.getElementById("vakSelect").value;
-    const moeilijkheid = document.getElementById("moeilijkheidSelect").value;
-    const datum = document.getElementById("datumInput").value;
 
-    if (vak && moeilijkheid && datum) {
-        const tableBody = document.getElementById("planningTabel");
+        // Toevoegen van een nieuwe rij in de extra tabel
+        window.addExtraRow = function() {
+            const vak = document.getElementById("extraVakSelect").value;
+            const moeilijkheid = document.getElementById("extraMoeilijkheidSelect").value;
+            const datum = document.getElementById("extraDatumInput").value;
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${vak}</td>
-            <td>${moeilijkheid}</td>
-            <td>${datum}</td>
-            <td><button onclick="removeRow(this)">Verwijderen</button></td>
-        `;
-        tableBody.appendChild(row);
+            if (vak && moeilijkheid && datum) {
+                const tableBody = document.getElementById("extraPlanningTabel");
 
-        // Opslaan van de rij in localStorage
-        saveToLocalStorage();
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${vak}</td>
+                    <td>${moeilijkheid}</td>
+                    <td>${datum}</td>
+                    <td><button onclick="removeRow(this)">Verwijderen</button></td>
+                `;
+                tableBody.appendChild(row);
 
-        // Reset inputvelden
-        document.getElementById("vakSelect").value = "Wiskunde"; 
-        document.getElementById("moeilijkheidSelect").value = "1"; 
-        document.getElementById("datumInput").value = ""; 
-    } else {
-        alert("Vul alstublieft alle velden in.");
-    }
-};
+                // Reset inputvelden
+                document.getElementById("extraVakSelect").value = "Wiskunde"; 
+                document.getElementById("extraMoeilijkheidSelect").value = "1"; 
+                document.getElementById("extraDatumInput").value = ""; 
+            } else {
+                alert("Vul alstublieft alle velden in.");
+            }
+        };
 
-// Rij verwijderen uit de tabel
-window.removeRow = function(button) {
-    button.closest("tr").remove();
+        // Rij verwijderen uit de tabel
+        window.removeRow = function(button) {
+            button.closest("tr").remove();
+        };
 
-    // Na verwijderen, de data opnieuw opslaan in localStorage
-    saveToLocalStorage();
-};
+        // Functie om de planning op te slaan in localStorage
+        function saveToLocalStorage() {
+            const tableRows = document.querySelectorAll("#planningTabel tr");
+            const studyPlan = [];
 
-// Functie om de planning op te slaan in localStorage
-function saveToLocalStorage() {
-    const tableRows = document.querySelectorAll("#planningTabel tr");
-    const studyPlan = [];
-
-    tableRows.forEach(row => {
-        const cells = row.getElementsByTagName("td");
-        if (cells.length === 4) { // Controle of rij de juiste structuur heeft
-            studyPlan.push({
-                vak: cells[0].textContent.trim(),
-                moeilijkheid: cells[1].textContent.trim(),
-                datum: cells[2].textContent.trim()
+            tableRows.forEach(row => {
+                const cells = row.getElementsByTagName("td");
+                if (cells.length === 4) { // Controle of rij de juiste structuur heeft
+                    studyPlan.push({
+                        vak: cells[0].textContent.trim(),
+                        moeilijkheid: cells[1].textContent.trim(),
+                        datum: cells[2].textContent.trim()
+                    });
+                }
             });
+
+            localStorage.setItem('studyPlan', JSON.stringify(studyPlan));  // Sla de planning op in localStorage
         }
-    });
 
-    localStorage.setItem('studyPlan', JSON.stringify(studyPlan));  // Sla de planning op in localStorage
-}
+        // Studieplanning verzamelen en opslaan in localStorage
+        window.submitPlanning = function() {
+            const tableRows = document.querySelectorAll("#planningTabel tr");
+            const studyPlan = [];
 
-// Studieplanning verzamelen en opslaan in localStorage
-window.submitPlanning = function() {
-    const tableRows = document.querySelectorAll("#planningTabel tr");
-    const studyPlan = [];
-
-    tableRows.forEach(row => {
-        const cells = row.getElementsByTagName("td");
-        if (cells.length === 4) { // Controle of rij de juiste structuur heeft
-            studyPlan.push({
-                vak: cells[0].textContent.trim(),
-                moeilijkheid: cells[1].textContent.trim(),
-                datum: cells[2].textContent.trim()
+            tableRows.forEach(row => {
+                const cells = row.getElementsByTagName("td");
+                if (cells.length === 4) { // Controle of rij de juiste structuur heeft
+                    studyPlan.push({
+                        vak: cells[0].textContent.trim(),
+                        moeilijkheid: cells[1].textContent.trim(),
+                        datum: cells[2].textContent.trim()
+                    });
+                }
             });
-        }
-    });
 
-    if (studyPlan.length === 0) {
-        alert("Er is geen studieplanning om op te slaan!");
-        return;
-    }
+            if (studyPlan.length === 0) {
+                alert("Er is geen studieplanning om op te slaan!");
+                return;
+            }
 
-    // Data opslaan in localStorage
-    saveToLocalStorage();
+            // Data opslaan in localStorage
+            saveToLocalStorage();
 
-    alert("Je studieplanning is succesvol opgeslagen in de browser!");
-};
+            alert("Je studieplanning is succesvol opgeslagen in de browser!");
+        };
 
-// Functie om de opgeslagen planning weer te geven bij het laden van de pagina
-window.onload = function() {
-    const storedStudyPlan = localStorage.getItem('studyPlan');
-    if (storedStudyPlan) {
-        const studyPlan = JSON.parse(storedStudyPlan);
-        const tableBody = document.getElementById("planningTabel");
+        // Functie om de opgeslagen planning weer te geven bij het laden van de pagina
+        window.onload = function() {
+            const storedStudyPlan = localStorage.getItem('studyPlan');
+            if (storedStudyPlan) {
+                const studyPlan = JSON.parse(storedStudyPlan);
+                const tableBody = document.getElementById("planningTabel");
 
-        studyPlan.forEach(item => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${item.vak}</td>
-                <td>${item.moeilijkheid}</td>
-                <td>${item.datum}</td>
-                <td><button onclick="removeRow(this)">Verwijderen</button></td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-};
-
-async function submitPlanning() {
-    const planningData = {
-        startdatum: startDate,
-        einddatum: endDate,
-        vakken: vakken // De vakkenlijst die door de gebruiker is ingevoerd
-    };
-
-    const response = await fetch('/generate-plan', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(planningData)
-    });
-
-    if (response.ok) {
-        const studyPlan = await response.json();
-        displayStudyPlan(studyPlan);  // Dit toont het gegenereerde plan op de frontend
-    } else {
-        alert("Er is iets misgegaan bij het genereren van je planning.");
-    }
-};
-
+                studyPlan.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.vak}</td>
+                        <td>${item.moeilijkheid}</td>
+                        <td>${item.datum}</td>
+                        <td><button onclick="removeRow(this)">Verwijderen</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        };
     </script>
-    
-
 </body>
 </html>
