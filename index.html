@@ -13,7 +13,7 @@
             text-align: center;
         }
 
-        #chatbox, #planning {
+        #chatbox, #planning, #resultaat {
             width: 80%;
             max-width: 600px;
             background: white;
@@ -24,63 +24,40 @@
             margin-bottom: 20px;
         }
 
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        .bot {
-            background-color: #d1ecf1;
-        }
-
-        .user {
-            background-color: #c3e6cb;
-            text-align: right;
-        }
-
-        input, select, button {
+        table {
             width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
             padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
         }
 
         button {
             background-color: #007bff;
             color: white;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
             cursor: pointer;
         }
 
         button:hover {
             background-color: #0056b3;
         }
-
-        #planning table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #planning th, #planning td {
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-
-        #planning th {
-            background-color: #007bff;
-            color: white;
-        }
     </style>
 </head>
 <body>
 
-    <div id="chatbox">
-        <div class="message bot">Vul je studieplanning in.</div>
-    </div>
-
     <div id="planning">
-        <h2>Jouw Studieplanning</h2>
+        <h2>Studieplanning Invullen</h2>
         <table>
             <thead>
                 <tr>
@@ -116,50 +93,27 @@
                 </tr>
             </tbody>
         </table>
-
-        <!-- Nieuwe tabel voor extra gegevens -->
-        <h2>Extra Studieplanning</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Vak</th>
-                    <th>Moeilijkheid</th>
-                    <th>Datum</th>
-                    <th>Actie</th>
-                </tr>
-            </thead>
-            <tbody id="extraPlanningTabel">
-                <tr>
-                    <td>
-                        <select id="extraVakSelect">
-                            <option value="Wiskunde">Wiskunde</option>
-                            <option value="Nederlands">Nederlands</option>
-                            <option value="Engels">Engels</option>
-                            <option value="Biologie">Biologie</option>
-                            <option value="Scheikunde">Scheikunde</option>
-                            <option value="Aardrijkskunde">Aardrijkskunde</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select id="extraMoeilijkheidSelect">
-                            <option value="1">1 - Makkelijk</option>
-                            <option value="2">2</option>
-                            <option value="3">3 - Gemiddeld</option>
-                            <option value="4">4</option>
-                            <option value="5">5 - Heel moeilijk</option>
-                        </select>
-                    </td>
-                    <td><input type="date" id="extraDatumInput"></td>
-                    <td><button onclick="addExtraRow()">Toevoegen</button></td>
-                </tr>
-            </tbody>
-        </table>
         <button onclick="submitPlanning()">Klaar</button>
     </div>
 
-    <script type="module">
-        // Toevoegen van een nieuwe rij in de eerste tabel
-        window.addRow = function() {
+    <div id="resultaat">
+        <h2>Gegenereerde Planning</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Vak</th>
+                    <th>Studietijd (Pomodoro)</th>
+                </tr>
+            </thead>
+            <tbody id="resultaatTabel">
+                <!-- Hier komt de gegenereerde planning -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addRow() {
             const vak = document.getElementById("vakSelect").value;
             const moeilijkheid = document.getElementById("moeilijkheidSelect").value;
             const datum = document.getElementById("datumInput").value;
@@ -176,75 +130,24 @@
                 `;
                 tableBody.appendChild(row);
 
-                // Reset inputvelden
-                document.getElementById("vakSelect").value = "Wiskunde"; 
-                document.getElementById("moeilijkheidSelect").value = "1"; 
-                document.getElementById("datumInput").value = ""; 
+                document.getElementById("datumInput").value = "";
             } else {
                 alert("Vul alstublieft alle velden in.");
             }
-        };
-
-        // Toevoegen van een nieuwe rij in de extra tabel
-        window.addExtraRow = function() {
-            const vak = document.getElementById("extraVakSelect").value;
-            const moeilijkheid = document.getElementById("extraMoeilijkheidSelect").value;
-            const datum = document.getElementById("extraDatumInput").value;
-
-            if (vak && moeilijkheid && datum) {
-                const tableBody = document.getElementById("extraPlanningTabel");
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${vak}</td>
-                    <td>${moeilijkheid}</td>
-                    <td>${datum}</td>
-                    <td><button onclick="removeRow(this)">Verwijderen</button></td>
-                `;
-                tableBody.appendChild(row);
-
-                // Reset inputvelden
-                document.getElementById("extraVakSelect").value = "Wiskunde"; 
-                document.getElementById("extraMoeilijkheidSelect").value = "1"; 
-                document.getElementById("extraDatumInput").value = ""; 
-            } else {
-                alert("Vul alstublieft alle velden in.");
-            }
-        };
-
-        // Rij verwijderen uit de tabel
-        window.removeRow = function(button) {
-            button.closest("tr").remove();
-        };
-
-        // Functie om de planning op te slaan in localStorage
-        function saveToLocalStorage() {
-            const tableRows = document.querySelectorAll("#planningTabel tr");
-            const studyPlan = [];
-
-            tableRows.forEach(row => {
-                const cells = row.getElementsByTagName("td");
-                if (cells.length === 4) { // Controle of rij de juiste structuur heeft
-                    studyPlan.push({
-                        vak: cells[0].textContent.trim(),
-                        moeilijkheid: cells[1].textContent.trim(),
-                        datum: cells[2].textContent.trim()
-                    });
-                }
-            });
-
-            localStorage.setItem('studyPlan', JSON.stringify(studyPlan));  // Sla de planning op in localStorage
         }
 
-        // Studieplanning verzamelen en opslaan in localStorage
-        window.submitPlanning = function() {
-            const tableRows = document.querySelectorAll("#planningTabel tr");
-            const studyPlan = [];
+        function removeRow(button) {
+            button.closest("tr").remove();
+        }
 
-            tableRows.forEach(row => {
+        async function submitPlanning() {
+            const rows = document.querySelectorAll("#planningTabel tr");
+            const planningData = [];
+
+            rows.forEach(row => {
                 const cells = row.getElementsByTagName("td");
-                if (cells.length === 4) { // Controle of rij de juiste structuur heeft
-                    studyPlan.push({
+                if (cells.length === 4) {
+                    planningData.push({
                         vak: cells[0].textContent.trim(),
                         moeilijkheid: cells[1].textContent.trim(),
                         datum: cells[2].textContent.trim()
@@ -252,36 +155,48 @@
                 }
             });
 
-            if (studyPlan.length === 0) {
-                alert("Er is geen studieplanning om op te slaan!");
+            if (planningData.length === 0) {
+                alert("Vul eerst een planning in!");
                 return;
             }
 
-            // Data opslaan in localStorage
-            saveToLocalStorage();
+            try {
+                const response = await fetch("https://study-planner-6yur.onrender.com", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ vakken: planningData })
+                });
 
-            alert("Je studieplanning is succesvol opgeslagen in de browser!");
-        };
+                if (!response.ok) {
+                    throw new Error("Fout bij het ophalen van de planning");
+                }
 
-        // Functie om de opgeslagen planning weer te geven bij het laden van de pagina
-        window.onload = function() {
-            const storedStudyPlan = localStorage.getItem('studyPlan');
-            if (storedStudyPlan) {
-                const studyPlan = JSON.parse(storedStudyPlan);
-                const tableBody = document.getElementById("planningTabel");
+                const result = await response.json();
+                toonPlanning(result);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Er is iets misgegaan. Probeer opnieuw!");
+            }
+        }
 
-                studyPlan.forEach(item => {
+        function toonPlanning(planning) {
+            const tableBody = document.getElementById("resultaatTabel");
+            tableBody.innerHTML = "";
+
+            Object.keys(planning).forEach(datum => {
+                planning[datum].forEach(item => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
+                        <td>${datum}</td>
                         <td>${item.vak}</td>
-                        <td>${item.moeilijkheid}</td>
-                        <td>${item.datum}</td>
-                        <td><button onclick="removeRow(this)">Verwijderen</button></td>
+                        <td>${item.studietijd} x 25 min</td>
                     `;
                     tableBody.appendChild(row);
                 });
-            }
-        };
+            });
+        }
     </script>
 </body>
 </html>
