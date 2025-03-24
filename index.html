@@ -11,9 +11,9 @@
             margin: 0;
             padding: 20px;
             text-align: center;
-        }a
+        }
 
-        #chatbox, #planning, #resultaat {
+        #planning, #resultaat {
             width: 80%;
             max-width: 600px;
             background: white;
@@ -58,6 +58,13 @@
 
     <div id="planning">
         <h2>Studieplanning Invullen</h2>
+
+        <label for="startDatumInput">Startdatum:</label>
+        <input type="date" id="startDatumInput">
+        
+        <label for="eindDatumInput">Einddatum:</label>
+        <input type="date" id="eindDatumInput">
+
         <table>
             <thead>
                 <tr>
@@ -111,6 +118,7 @@
             </tbody>
         </table>
     </div>
+
     <script>
         function addRow() {
             const vak = document.getElementById("vakSelect").value;
@@ -170,9 +178,7 @@
             try {
                 const response = await fetch("https://study-planner-6yur.onrender.com/generate-plan", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         startdatum: startDatum,
                         einddatum: eindDatum,
@@ -202,7 +208,7 @@
                     row.innerHTML = `
                         <td>${datum}</td>
                         <td>${item.vak}</td>
-                        <td>${item.studietijd} x 25 min</td>
+                        <td>${item.studietijd} min</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -210,5 +216,4 @@
         }
     </script>
 </body>
-
 </html>
